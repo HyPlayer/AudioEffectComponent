@@ -23,16 +23,20 @@ namespace AudioEffectComponent
 
         public unsafe void ProcessFrame(ProcessAudioFrameContext context)
         {
-            const float interval = 20f;
-
-            if (configuration.TryGetValue("AudioFade Disabled", out _)) return;
+            if (configuration.TryGetValue("AudioFade_Disabled", out _)) return;
 
             if (context.InputFrame.IsReadOnly) return;
 
             var _time = context.InputFrame.RelativeTime;
             if (!_time.HasValue) return;
-
             var time = _time.Value;
+
+            var interval = 3f;
+            configuration.TryGetValue("AudioFade_FadeDuration", out object intervalProperty);
+            if (intervalProperty != null)
+            {
+                interval = (float)intervalProperty;
+            }
 
             var amount = 1f;
 
@@ -40,7 +44,7 @@ namespace AudioEffectComponent
             {
                 amount = (float)(time.TotalSeconds / interval);
             }
-            else if (configuration.TryGetValue("AudioFade Duration", out var _duration)
+            else if (configuration.TryGetValue("AudioFade_TrackDuration", out var _duration)
                 && _duration is TimeSpan duration)
             {
                 amount = Math.Min(1f, (float)((duration.TotalSeconds - time.TotalSeconds) / interval));
